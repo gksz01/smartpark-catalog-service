@@ -1,3 +1,4 @@
+import {completeContract} from './openapi';
 import 'reflect-metadata';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -20,7 +21,7 @@ async function main(){
  const auth=new Auth(store,{hash:(s)=>hash(s,12),compare},{sign:(u)=>sign({role:u.role},env('JWT_SECRET'),{subject:u.id,expiresIn:'2h',issuer:'smartpark',audience:'smartpark-api',algorithm:'HS256'})});
  @Module({controllers:[CatalogController],providers:[{provide:'AUTH',useValue:auth},{provide:'CATALOG',useValue:new Catalog(store)}]}) class App{}
  const app=await NestFactory.create(App);app.use(helmet());app.use(correlation);app.useGlobalGuards(new AccessGuard());app.useGlobalFilters(new Errors());
- const doc=SwaggerModule.createDocument(app,new DocumentBuilder().setTitle('SmartPark — Catálogo').setVersion('1.0').addBearerAuth().addServer('/catalog').build());SwaggerModule.setup('docs',app,doc);
+ const doc=SwaggerModule.createDocument(app,new DocumentBuilder().setTitle('SmartPark — Catálogo').setVersion('1.0').addBearerAuth().addServer('/catalog').build());SwaggerModule.setup('docs',app,completeContract(doc,'catalog'));
  await app.listen(Number(process.env.PORT||3001),'0.0.0.0');
 }
 main().catch(e=>{console.error(e.name,e.message);process.exit(1);});
